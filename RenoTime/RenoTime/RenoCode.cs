@@ -128,7 +128,7 @@ namespace RenoTime
                 if (e.IsOpponent) continue;
                 if (e.GetTag(GAME_TAG.CONTROLLER) != Player.GetTag(GAME_TAG.CONTROLLER)) continue; //Skip Non-Player Entities
 
-                if(e.IsInPlay || e.IsInGraveyard || e.IsInHand)
+                if(e.IsInPlay || e.IsInGraveyard || e.IsInHand || e.IsSecret)
                 {
                     CheckForDupe(e.Card);
                 }
