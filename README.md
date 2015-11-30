@@ -14,3 +14,6 @@ RenoTime:
 
 Not RenoTime:
 ![alt text][not-active]
+
+Download Here:
+https://github.com/jdonohoo/RenoTime/releases
