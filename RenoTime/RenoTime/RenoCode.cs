@@ -20,6 +20,7 @@ namespace RenoTime
         
         private static HearthstoneTextBlock _info;
         private static List<Card> Dupes { get; set; }
+        private static bool HasReno { get; set; }
         private static Entity Player { get { return Entities == null ? null : Entities.First(x => x.IsPlayer); } }
         
         private static Entity[] Entities
@@ -85,11 +86,24 @@ namespace RenoTime
         public static void NewGame()
         {
             Logger.WriteLine("NewGame();", "RenoTime");
-            Dupes = new List<Card>();
-            _info.Visibility = Visibility.Visible;
-            _info.Fill = Brushes.Yellow;
-            LoadDupes();
-            CheckDupes();
+
+            var Reno = DeckList.Instance.ActiveDeck.Cards.FirstOrDefault(x => x.Name == "Reno Jackson");
+            if(Reno == null)
+            {
+                _info.Visibility = Visibility.Hidden;
+                HasReno = false;
+            }
+            else
+            {
+                Dupes = new List<Card>();
+                _info.Visibility = Visibility.Visible;
+                _info.Fill = Brushes.Yellow;
+                HasReno = true;
+                LoadDupes();
+                CheckDupes();
+            }           
+
+
         }
 
         public static void TurnStart(ActivePlayer player)
@@ -104,6 +118,8 @@ namespace RenoTime
 
         public static void CardDrew(Card card)
         {
+            if (HasReno == false) return;
+
             Logger.WriteLine("CardDrew(); " + card.Name, "RenoTime");
             var mulliganIsDone = Hearthstone_Deck_Tracker.API.Core.Game.IsMulliganDone;
 
@@ -119,6 +135,7 @@ namespace RenoTime
         public static void CheckDupes()
         {
             int controller = Player.GetTag(GAME_TAG.CONTROLLER);
+            if (HasReno == false) return;
                   
             foreach (var e in Entities)
             {
@@ -149,6 +166,7 @@ namespace RenoTime
 
         public static void LoadDupes()
         {
+            if (HasReno == false) return;
             Logger.WriteLine("LoadDupes();", "RenoTime");
 
             Dupes.Clear();
@@ -166,6 +184,7 @@ namespace RenoTime
 
         public static void CheckForDupe(Card card)
         {
+            if (HasReno == false) return;
             var dupeNames = Dupes.Select(x => x.Name).ToList();
 
             if (dupeNames.Contains(card.Name))
