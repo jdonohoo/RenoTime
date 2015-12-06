@@ -11,6 +11,7 @@ using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Enums.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using RenoTime.Controls;
 
 
 namespace RenoTime
@@ -18,10 +19,10 @@ namespace RenoTime
     public class RenoCode
     {
         
-        private static HearthstoneTextBlock _info;
         private static List<Card> Dupes { get; set; }
-        private static bool HasReno { get; set; }
         private static Entity Player { get { return Entities == null ? null : Entities.First(x => x.IsPlayer); } }
+        private static RenoUI RenoPanel { get; set; }
+        public static bool HasReno { get { return DeckList.Instance.ActiveDeck.Cards.FirstOrDefault(x => x.Name == "Reno Jackson") == null ? false : true; } }
         
         private static Entity[] Entities
         {
@@ -35,75 +36,75 @@ namespace RenoTime
 
         public static void Load()
         {
-
             Logger.WriteLine("Load();","RenoTime");
-
             Dupes = new List<Card>();
 
-            // A border to put around the text block
-            Border blockBorder = new Border();
-            blockBorder.BorderBrush = Brushes.Black;
-            blockBorder.BorderThickness = new Thickness(1.0);
-            blockBorder.Padding = new Thickness(8.0);
-
-            // A text block using the HS font
-            _info = new HearthstoneTextBlock();
-            _info.Text = "";
-            _info.FontSize = 18;
-            _info.Fill = Brushes.Yellow;
-
-            // Add the text block as a child of the border element
-            blockBorder.Child = _info;
-
-            // Get the HDT Overlay canvas object
-            var canvas = Hearthstone_Deck_Tracker.API.Core.OverlayCanvas;
-            // Get canvas centre
-            var fromTop = canvas.Height / 2;
-            var fromLeft = canvas.Width / 2;
-            // Give the text block its position within the canvas, roughly in the center
-            Canvas.SetTop(blockBorder, fromTop);
-            Canvas.SetLeft(blockBorder, fromLeft);
-            // Give the text block its position within the canvas
-            
-            
-            // Add the text block and image to the canvas
-            canvas.Children.Add(blockBorder);
-
-   
             // Register methods to be called when GameEvents occur
             GameEvents.OnGameStart.Add(NewGame);
+            Hearthstone_Deck_Tracker.API.DeckManagerEvents.OnDeckSelected.Add(DeckSwitched);
             GameEvents.OnGameEnd.Add(GameOver);
             GameEvents.OnInMenu.Add(GameOver);
             GameEvents.OnPlayerDraw.Add(CardDrew);
             GameEvents.OnTurnStart.Add(TurnStart);
-            
 
-            
+
+            InitUI();
             
         }
+
+
+        private static void InitUI()
+        {
+
+            RenoPanel = new RenoUI();
+            RenoPanel.RenoText.Text = "";
+            RenoPanel.RenoText.FontSize = 18;
+            RenoPanel.RenoText.Fill = Brushes.Yellow;
+
+
+            // Get the HDT Overlay canvas object
+            var canvas = Hearthstone_Deck_Tracker.API.Core.OverlayCanvas;
+            
+            // Get canvas centre
+            var fromTop = canvas.Height / 2;
+            var fromLeft = canvas.Width / 2;
+            
+            // Give the text block its position within the canvas, roughly in the center
+            Canvas.SetTop(RenoPanel, fromTop);
+            Canvas.SetLeft(RenoPanel, fromLeft);
+            
+                        
+            // Add the text block and image to the canvas
+            canvas.Children.Add(RenoPanel);
+        }
+
 
 
         public static void NewGame()
         {
             Logger.WriteLine("NewGame();", "RenoTime");
 
-            var Reno = DeckList.Instance.ActiveDeck.Cards.FirstOrDefault(x => x.Name == "Reno Jackson");
-            if(Reno == null)
+            
+            if(HasReno)
             {
-                _info.Visibility = Visibility.Hidden;
-                HasReno = false;
+                Dupes = new List<Card>();
+                RenoPanel.Visibility = Visibility.Visible;
+                RenoPanel.RenoText.Fill = Brushes.Yellow;
+                LoadDupes();
+                CheckDupes();
+                
             }
             else
             {
-                Dupes = new List<Card>();
-                _info.Visibility = Visibility.Visible;
-                _info.Fill = Brushes.Yellow;
-                HasReno = true;
-                LoadDupes();
-                CheckDupes();
+                RenoPanel.Visibility = Visibility.Hidden;
             }           
 
 
+        }
+
+        public static void DeckSwitched(Deck deck)
+        {
+            NewGame();
         }
 
         public static void TurnStart(ActivePlayer player)
@@ -161,7 +162,7 @@ namespace RenoTime
         {
 
             Logger.WriteLine("GameOver();", "RenoTime");
-            _info.Visibility = Visibility.Hidden;
+            RenoPanel.Visibility = Visibility.Hidden;
         }
 
         public static void LoadDupes()
@@ -172,11 +173,11 @@ namespace RenoTime
             Dupes.Clear();
             var deck = DeckList.Instance.ActiveDeck;
 
-            _info.Text = string.Empty;
+            RenoPanel.RenoText.Text = string.Empty;
 
             foreach (var c in deck.Cards.Where(x=>x.Count == 2))
             {
-                _info.Text += c.Name + "(" + c.Count + ")\n";
+                RenoPanel.RenoText.Text += c.Name + "\n";
                 Dupes.Add(c);
             }
 
@@ -193,16 +194,16 @@ namespace RenoTime
                 var cardToRemove = Dupes.FirstOrDefault(x => x.Name == card.Name);
                 Dupes.Remove(cardToRemove);
 
-                _info.Text = string.Empty;
+                RenoPanel.RenoText.Text = string.Empty;
                 foreach (var c in Dupes)
                 {
-                    _info.Text += c.Name + "\n";
+                    RenoPanel.RenoText.Text += c.Name + "\n";
                 }
 
                 if(Dupes.Count == 0) //RENO TIME
                 {
-                    _info.Text = "Reno is hawt!";
-                    _info.Fill = Brushes.LimeGreen;
+                    RenoPanel.RenoText.Text = "Reno is hawt!";
+                    RenoPanel.RenoText.Fill = Brushes.LimeGreen;
                     
                     Logger.WriteLine("RENO TIME !!!!", "RenoTime");
                 }
