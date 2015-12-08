@@ -199,14 +199,15 @@ namespace RenoTime
                 {
                     RenoPanel.RenoText.Text += c.Name + "\n";
                 }
+                
+            }
 
-                if(Dupes.Count == 0) //RENO TIME
-                {
-                    RenoPanel.RenoText.Text = "Reno is hawt!";
-                    RenoPanel.RenoText.Fill = Brushes.LimeGreen;
-                    
-                    Logger.WriteLine("RENO TIME !!!!", "RenoTime");
-                }
+            if (Dupes.Count == 0) //RENO TIME
+            {
+                RenoPanel.RenoText.Text = "Reno is hawt!";
+                RenoPanel.RenoText.Fill = Brushes.LimeGreen;
+
+                Logger.WriteLine("RENO TIME !!!!", "RenoTime");
             }
         }
 
